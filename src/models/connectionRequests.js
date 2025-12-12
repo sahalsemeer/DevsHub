@@ -4,11 +4,13 @@ const mongoose  = require('mongoose')
 const connectionsSchema = new mongoose.Schema({
     FromUserId:{
         type:mongoose.Schema.Types.ObjectId,
-        required:true
+        required:true,
+        ref:'users'
     },
     ToUserId:{
         type:mongoose.Schema.Types.ObjectId,
-        required:true
+        required:true,
+        ref:'users'
 
     },
     status:{

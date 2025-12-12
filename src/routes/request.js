@@ -3,11 +3,12 @@ const { UserAuth } = require("../middleware/auth");
 const ConnectionRequests = require("../models/connectionRequests");
 const User = require("../models/users");
 const mongoose = require("mongoose");
+const authRouter = require("./auth");
 
 const requestRouter = express.Router();
 
 requestRouter.post(
-  "/connection/:status/:userId",
+  "/connection/send/:status/:userId",
   UserAuth,
   async (req, res) => {
     try {
@@ -45,7 +46,9 @@ requestRouter.post(
         throw new Error("Request already sent!");
       }
       await ConnectionReq.save();
-      res.json({message:`${req.user.firstName} is ${connectionStatus} ${isUserExists.firstName}`})
+      res.json({
+        message: `${req.user.firstName} is ${connectionStatus} ${isUserExists.firstName}`,
+      });
     } catch (error) {
       console.log("Full error:", error);
       console.log("Error code:", error.code);
@@ -60,5 +63,43 @@ requestRouter.post(
     }
   }
 );
+
+
+requestRouter.post('/connection/review/:status/:connectionId',UserAuth,async(req,res) => {
+  try {
+    const loggedInUser = req.user;
+    const {status,connectionId} = req.params;
+
+    const allowedStatus = ['accepted','rejected']
+    if(!allowedStatus.includes(status)){
+      throw new Error('Invalid Status!')
+    }
+
+    const connectionReq = await ConnectionRequests.findOne({
+      _id:connectionId,
+      ToUserId:loggedInUser,
+      status:'interested'
+    })
+
+    if(!connectionReq){
+      return res.status(404).json({message:'No Request found!'})
+    }
+
+    connectionReq.status = status;
+    console.log(connectionReq);
+
+    const data = await connectionReq.save()
+    res.json({
+      message:`Request ${status}!`,
+      data
+    })
+
+    
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({message:error.message})
+    
+  }
+})
 
 module.exports = requestRouter;

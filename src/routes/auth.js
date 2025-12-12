@@ -6,7 +6,10 @@ const userModel = require("../models/users");
 const authRouter = express.Router();
 
 authRouter.post("/signup", async (req, res) => {
-  const { firstName, lastName, emailId, password } = req.body;
+  const { firstName, lastName,emailId, password } = req.body;
+  
+  
+  
 
   try {
     validate(req);
@@ -28,6 +31,7 @@ authRouter.post("/signup", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
   const { emailId, password } = req.body;
+  console.log(emailId);
 
   try {
     const user = await userModel.findOne({ emailId: emailId });
