@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 
 const profileRouter = express.Router();
 
+
+
 profileRouter.get("/profile/view", UserAuth, async (req, res) => {
   const user = req.user;
   res.send(user);
@@ -28,7 +30,7 @@ profileRouter.patch("/profile/edit", UserAuth, async (req, res) => {
       res.json({ message: "User Updated Succesfully!", user: req.user });
     }
   } catch (error) {
-    res.send(error.message);
+    res.status(400).send(error.message);
   }
 });
 

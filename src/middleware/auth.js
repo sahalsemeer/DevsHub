@@ -2,17 +2,20 @@ const userModel = require("../models/users");
 const jwt = require("jsonwebtoken");
 
 const UserAuth = async (req, res, next) => {
+  
+
   try {
     const { token } = req.cookies;
-    // console.log(token);
+    if (!token) {
+      res.status(401).json({ message: "Token Must be Provided" });
+    }
 
     const AccessToken = jwt.verify(token, "qaz123#wwxcvb");
-    // console.log(AccessToken);
+
     const { id } = AccessToken;
-    // console.log(id);
 
     const user = await userModel.findById(id);
-    // console.log(user);
+
     if (user) {
       req.user = user;
       next();
@@ -20,7 +23,7 @@ const UserAuth = async (req, res, next) => {
       throw new Error("User does not exist!");
     }
   } catch (error) {
-    res.send(error.message);
+    res.status(401).send(error.message);
   }
 };
 

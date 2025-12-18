@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
     },
     photoURL:{
         type:String,
+        default:'https://imgs.search.brave.com/j4MLNz4UHMqnN5ORNhb3JWWKMGcU3CtKf8qIKkHM3jE/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9jZG4u/dmVjdG9yc3RvY2su/Y29tL2kvNTAwcC83/MC8wMS9kZWZhdWx0/LW1hbGUtYXZhdGFy/LXByb2ZpbGUtaWNv/bi1ncmV5LXBob3Rv/LXZlY3Rvci0zMTgy/NzAwMS5qcGc'
     },
     about:{
       type:String,

@@ -1,25 +1,26 @@
 const express = require("express");
-const {validate} = require("../utils/validation");
+const { validate } = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/users");
 
+
 const authRouter = express.Router();
 
+
+
 authRouter.post("/signup", async (req, res) => {
-  const { firstName, lastName,emailId, password } = req.body;
-  
-  
-  
+  const { firstName, lastName, emailId, password,photoURL } = req.body;
 
   try {
     validate(req);
-    console.log(req);
+    // console.log(req);
     const hashedPass = await bcrypt.hash(password, 10);
     const users = new userModel({
       firstName: firstName,
       lastName: lastName,
       emailId: emailId,
       password: hashedPass,
+      photoURL:photoURL
     });
     await users.save();
 
@@ -31,7 +32,7 @@ authRouter.post("/signup", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
   const { emailId, password } = req.body;
-  console.log(emailId);
+  // console.log(emailId);
 
   try {
     const user = await userModel.findOne({ emailId: emailId });
@@ -43,8 +44,8 @@ authRouter.post("/login", async (req, res) => {
 
     if (isPassword) {
       const token = await user.getJWT();
-      res.cookie("token", token);
-      res.send("User Login Succesfull");
+      res.cookie("token", token)
+      res.send(user)
     } else {
       throw new Error("Invalid Credentials.");
     }
@@ -53,10 +54,9 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-
-authRouter.post('/logout',(req,res) => {
-   res.clearCookie('token')
-   res.send('Logout Succesfully!')
-})
+authRouter.post("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.send("Logout Succesfully!");
+});
 
 module.exports = authRouter;
