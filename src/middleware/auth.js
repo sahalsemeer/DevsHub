@@ -7,7 +7,7 @@ const UserAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
     if (!token) {
-      res.status(401).json({ message: "Token Must be Provided" });
+      return res.status(401).json({ message: "Token Must be Provided" });
     }
 
     const AccessToken = jwt.verify(token, "qaz123#wwxcvb");

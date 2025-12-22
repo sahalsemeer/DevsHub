@@ -11,7 +11,7 @@ userRouter.get("/user/requests/received", UserAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
-    console.log(loggedInUser._id);
+    // console.log(loggedInUser._id);
 
     const connectionRequest = await ConnectionsRequests.find({
       ToUserId: loggedInUser._id,
@@ -39,7 +39,7 @@ userRouter.get("/user/requests/connections", UserAuth, async (req, res) => {
       .populate({ path: "FromUserId", select: selectFields })
       .populate({ path: "ToUserId", select: selectFields });
 
-    console.log(connections);
+    // console.log(connections);
 
     const data = connections.map((item) => {
       if (item.FromUserId._id.equals(loggedInUser._id)) {

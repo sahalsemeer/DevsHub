@@ -2,6 +2,7 @@ const express = require("express");
 const { validate } = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/users");
+const { data } = require("react-router-dom");
 
 
 const authRouter = express.Router();
@@ -22,9 +23,12 @@ authRouter.post("/signup", async (req, res) => {
       password: hashedPass,
       photoURL:photoURL
     });
-    await users.save();
 
-    res.send("User Added Succesfully!");
+    const token = await users.getJWT()
+    await users.save();
+    
+    res.cookie('token',token)
+    res.send(users)
   } catch (error) {
     res.status(400).send(error.message);
   }
