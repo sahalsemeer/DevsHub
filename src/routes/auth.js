@@ -2,7 +2,7 @@ const express = require("express");
 const { validate } = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/users");
-const { data } = require("react-router-dom");
+
 
 
 const authRouter = express.Router();
