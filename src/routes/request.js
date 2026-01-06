@@ -4,6 +4,7 @@ const ConnectionRequests = require("../models/connectionRequests");
 const User = require("../models/users");
 const mongoose = require("mongoose");
 const authRouter = require("./auth");
+const {run} = require('../utils/sendEmail')
 
 const requestRouter = express.Router();
 
@@ -46,9 +47,12 @@ requestRouter.post(
         throw new Error("Request already sent!");
       }
       await ConnectionReq.save();
+      const emailRes = await run()
+      console.log(emailRes);
       res.json({
         message: `${req.user.firstName} is ${connectionStatus} ${isUserExists.firstName}`,
       });
+     
     } catch (error) {
       console.log("Full error:", error);
       console.log("Error code:", error.code);
