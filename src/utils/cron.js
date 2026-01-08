@@ -25,15 +25,16 @@ cron.schedule("0 8 * * *", async () => {
     for (let email of emails) {
       try {
         console.log(email);
-        const res = await run(`CONNECTION REQ SENT TO ${email}`, "You Have New Connection Requests!");
+        const res = await run(
+          `CONNECTION REQ SENT TO ${email}`,
+          "You Have New Connection Requests!"
+        );
         console.log(res);
       } catch (error) {
         console.log(error);
-        res.status(501).json({ message: error.message });
       }
     }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ message: error.message });
   }
 });
