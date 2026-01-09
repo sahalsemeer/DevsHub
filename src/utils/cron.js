@@ -3,32 +3,58 @@ const ConnectionsRequests = require("../models/connectionRequests");
 const { run } = require("./sendEmail");
 const { startOfDay, endOfDay, subDays } = require("date-fns");
 
-cron.schedule("0 8 * * *", async () => {
+const sleep = () => new Promise((resolve) => setTimeout(resolve,[3000]))
+
+cron.schedule("2 15 * * *", async () => {
   try {
     const yesterday = subDays(Date.now(), 1);
     const startOfYesterday = startOfDay(yesterday);
     const endOfYesterday = endOfDay(yesterday);
 
     //yesterday's connection reqs
-    const connectionRequests = await ConnectionsRequests.find({
-      status: "interested",
-      createdAt: {
-        $gt: startOfYesterday,
-        $lte: endOfYesterday,
+    const users = await ConnectionsRequests.aggregate([
+      {
+        $match: {
+          status: "interested",
+          createdAt: {
+            $gt: startOfYesterday,
+            $lt: endOfYesterday,
+          },
+        },
       },
-    }).populate("ToUserId");
+      {
+        $group: {
+          _id: "$ToUserId",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          email: "$user.emailId",
+          count: 1,
+        },
+      },
+    ]);
 
-    const emails = [
-      ...new Set(connectionRequests.map((req) => req.ToUserId.emailId)),
-    ];
+    console.log(users);
 
-    for (let email of emails) {
+    for (const user of users) {
       try {
-        console.log(email);
+        console.log(user.email);
         const res = await run(
-          `CONNECTION REQ SENT TO ${email}`,
+          `CONNECTION REQ SENT TO ${user.email}`,
           "You Have New Connection Requests!"
         );
+        await sleep()
         console.log(res);
       } catch (error) {
         console.log(error);
@@ -38,3 +64,4 @@ cron.schedule("0 8 * * *", async () => {
     console.log(error);
   }
 });
+
