@@ -7,6 +7,7 @@ import Login from './components/Login'
 import Profile from './components/Profile'
 import Connections from './components/Connections'
 import Requests from './components/Requests'
+import Chat from './components/Chat'
 
 const App = () => {
   const router = createBrowserRouter([
@@ -28,12 +29,17 @@ const App = () => {
       },
       {
         path:'/connections',
-        element:<Connections />
+        element:<Connections />, 
       },
       {
         path:'/requests',
         element:<Requests />
+      },
+      {
+        path:'/message/:RecieveruserId',
+        element:<Chat />
       }
+     
      
     ]
    }  

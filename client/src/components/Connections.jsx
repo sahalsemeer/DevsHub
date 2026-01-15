@@ -4,10 +4,12 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { BASE_API } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnection } from "../store/connectionSlice";
+import { useNavigate } from "react-router-dom";
 
 const Connections = () => {
   const connection = useSelector((state) => state.connection);
   console.log(connection?.connections?.length);
+  const nav = useNavigate()
 
   const dispatch = useDispatch();
   const getConnections = async () => {
@@ -74,7 +76,7 @@ const Connections = () => {
                           <a>View Profile</a>
                         </li>
                         <li>
-                          <a>Message</a>
+                          <a onClick={() => nav(`/message/${_id}`)}>Message</a>
                         </li>
                         <li>
                           <a className="text-error">Remove</a>
