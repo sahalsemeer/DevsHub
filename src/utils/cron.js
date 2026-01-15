@@ -47,6 +47,8 @@ cron.schedule("2 15 * * *", async () => {
 
     console.log(users);
 
+
+    // email sent still not optimized, how to handle 1000 emails at one time.
     for (const user of users) {
       try {
         console.log(user.email);
@@ -54,7 +56,7 @@ cron.schedule("2 15 * * *", async () => {
           `CONNECTION REQ SENT TO ${user.email}`,
           "You Have New Connection Requests!"
         );
-        await sleep()
+       
         console.log(res);
       } catch (error) {
         console.log(error);

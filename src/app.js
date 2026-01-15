@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
@@ -7,10 +7,13 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cors = require("cors");
-require('./utils/cron')
-
+const http = require("http");
+const {initSocket} = require("./utils/socket");
+require("./utils/cron");
 
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 
 app.use(
   cors({
@@ -30,7 +33,7 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("database connected");
-    app.listen(7777, () => {
+    server.listen(7777, () => {
       console.log("server is running on 7777");
     });
   })
