@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { creatSocketConnection } from "../utils/socket";
 import { useParams, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  const user = useSearchParams((state) => state.user);
+  const user = useSelector((state) => state.user.user);
   const { RecieveruserId } = useParams();
   const userId = user?._id;
 
   useEffect(() => {
+    if(!userId) return;
+    
+    console.log(userId);
+
     const socket = creatSocketConnection();
 
     socket.emit("joinChat", { userId, RecieveruserId });
@@ -21,6 +26,13 @@ const Chat = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
+    const socket = creatSocketConnection()
+    socket.emit('sendMessage',{
+      name:user.firstName,
+      userId,
+      RecieveruserId,
+      text:inputMessage
+     }) 
 
     if (inputMessage.trim() === "") return;
 
@@ -46,9 +58,9 @@ const Chat = () => {
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-5 bg-gray-50 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto p-5 bg-gray-700 flex flex-col gap-3">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400 text-base">
+          <div className="flex items-center justify-center h-full text-white text-base">
             <p className="m-0">No messages yet. Start the conversation!</p>
           </div>
         ) : (
@@ -69,7 +81,7 @@ const Chat = () => {
 
       {/* Message Input */}
       <form
-        className="flex p-4 bg-white border-t border-gray-200 gap-3"
+        className="flex p-4 bg-gray-800 border-none gap-3"
         onSubmit={handleSendMessage}
       >
         <input
@@ -77,7 +89,7 @@ const Chat = () => {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-3 border border-gray-200 rounded-full text-gray-600 outline-none focus:border-gray-600 transition-colors"
+          className="flex-1 px-4 py-3 border border-none rounded-full text-white outline-none focus:border-gray-600 transition-colors"
         />
         <button
           type="submit"

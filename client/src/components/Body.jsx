@@ -14,12 +14,12 @@ const Body = () => {
   const user = useSelector(state => state.user)
   const fetchUser = async () => {
     try {
-      console.log(user);
       if(user === null) return;
       const res = await axios.get(`${BASE_API}/profile/view`,{
         withCredentials:true
       });
       dispatch(login(res.data))
+      
 
     } catch (error) {
 
