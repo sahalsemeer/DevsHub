@@ -44,7 +44,7 @@ authRouter.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials.");
     }
     const isPassword = await user.comparePass(password);
-    console.log(isPassword);
+    // console.log(isPassword);
 
     if (isPassword) {
       const token = await user.getJWT();
