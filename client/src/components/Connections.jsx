@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const Connections = () => {
   const connection = useSelector((state) => state.connection);
-  console.log(connection?.connections?.length);
+  // console.log(connection?.connections?.length);
   const nav = useNavigate()
 
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ const Connections = () => {
     const res = await axios.get(BASE_API + "/user/requests/connections", {
       withCredentials: true,
     });
-    console.log(res?.data?.data);
+    // console.log(res?.data?.data);
 
     dispatch(addConnection(res?.data?.data));
   };

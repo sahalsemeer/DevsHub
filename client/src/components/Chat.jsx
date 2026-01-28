@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { creatSocketConnection } from "../utils/socket";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { BASE_API } from "../utils/constants";
+import axios from "axios";
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -10,43 +12,74 @@ const Chat = () => {
   const { RecieveruserId } = useParams();
   const userId = user?._id;
 
+  const getChats = async () => {
+    try {
+      const data = await axios.get(`${BASE_API}/chats/${RecieveruserId}`, {
+        withCredentials: true,
+      });
+
+      const fetchMessages = data?.data?.chats?.messages;
+
+      if (fetchMessages) {
+        const formatMessages = fetchMessages.map((message) => {
+          console.log(message._id, message.text, message.senderId.firstName);
+          return {
+            _id: message._id,
+            text: message.text,
+            sender: message.firstName,
+          };
+        });
+        console.log(formatMessages);
+
+        setMessages(formatMessages);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
-    if(!userId) return;
-    
-    console.log(userId);
+    getChats();
+  }, []);
+  useEffect(() => {
+    // console.log(userId);
 
     const socket = creatSocketConnection();
 
     socket.emit("joinChat", { userId, RecieveruserId });
 
+    socket.on("messageReceived", ({ name, text }) => {
+      console.log(`${name}:${text}`);
+
+      const newMessage = {
+        id: Date.now(),
+        text: text,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        sender: name,
+      };
+
+      setMessages((messages) => [...messages, newMessage]);
+    });
+
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [userId, RecieveruserId]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    const socket = creatSocketConnection()
-    socket.emit('sendMessage',{
-      name:user.firstName,
+    const socket = creatSocketConnection();
+    socket.emit("sendMessage", {
+      name: user.firstName,
       userId,
       RecieveruserId,
-      text:inputMessage
-     }) 
+      text: inputMessage,
+    });
 
     if (inputMessage.trim() === "") return;
 
-    const newMessage = {
-      id: Date.now(),
-      text: inputMessage,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      sender: "user",
-    };
-
-    setMessages([...messages, newMessage]);
     setInputMessage("");
   };
 
@@ -66,13 +99,12 @@ const Chat = () => {
         ) : (
           messages.map((message) => (
             <div key={message.id} className="flex justify-end animate-slideIn">
+              <p>{message.sender}</p>
               <div className="max-w-[70%] px-4 py-3 rounded-2xl bg-gray-800 text-white shadow-md">
                 <p className="m-0 mb-1 wrap-break-word leading-relaxed">
                   {message.text}
                 </p>
-                <span className="text-xs opacity-80 block text-right">
-                  {message.timestamp}
-                </span>
+                <span className="text-xs opacity-80 block text-right"></span>
               </div>
             </div>
           ))

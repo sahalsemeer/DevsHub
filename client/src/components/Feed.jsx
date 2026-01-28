@@ -12,7 +12,7 @@ const Feed = () => {
   const [showToast, setShowToast] = useState(false);
   const feed = useSelector((state) => state.feed);
   const user = feed?.feed;
-  console.log(user);
+  // console.log(user);
   // console.log(user.length);
 
   // console.log(feed?.feed[0]?.firstName);
