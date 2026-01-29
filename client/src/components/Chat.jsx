@@ -12,6 +12,8 @@ const Chat = () => {
   const { RecieveruserId } = useParams();
   const userId = user?._id;
 
+  console.log(messages);
+
   const getChats = async () => {
     try {
       const data = await axios.get(`${BASE_API}/chats/${RecieveruserId}`, {
@@ -24,9 +26,9 @@ const Chat = () => {
         const formatMessages = fetchMessages.map((message) => {
           console.log(message._id, message.text, message.senderId.firstName);
           return {
-            _id: message._id,
+            id: message._id,
             text: message.text,
-            sender: message.firstName,
+            sender: `${message.senderId.firstName} ${message.senderId.lastName}`,
           };
         });
         console.log(formatMessages);
@@ -40,6 +42,7 @@ const Chat = () => {
   useEffect(() => {
     getChats();
   }, []);
+
   useEffect(() => {
     // console.log(userId);
 
@@ -70,6 +73,9 @@ const Chat = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
+
+    if (inputMessage.trim() === "") return;
+    
     const socket = creatSocketConnection();
     socket.emit("sendMessage", {
       name: user.firstName,
@@ -78,7 +84,7 @@ const Chat = () => {
       text: inputMessage,
     });
 
-    if (inputMessage.trim() === "") return;
+   
 
     setInputMessage("");
   };
