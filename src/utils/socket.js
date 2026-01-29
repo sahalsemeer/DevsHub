@@ -1,5 +1,6 @@
 const socket = require("socket.io");
 const chatModel = require("../models/chat");
+const ConnectionsRequests = require("../models/connectionRequests");
 
 const initSocket = (server) => {
   const io = socket(server, {
@@ -17,6 +18,28 @@ const initSocket = (server) => {
     socket.on("sendMessage", async ({ name, userId, RecieveruserId, text }) => {
       const room = [userId, RecieveruserId].sort().join("_");
       try {
+        const friends = await ConnectionsRequests.findOne({
+          $or: [
+            {
+              FromUserId: userId,
+              ToUserId: RecieveruserId,
+              status: "accepted",
+            },
+            {
+              FromUserId: RecieveruserId,
+              ToUserId: userId,
+              status: "accepted",
+            },
+          ],
+        });
+
+        console.log(friends);
+
+        if (!friends) {
+          console.log("You cant send req to not in the friend list!");
+          return;
+        }
+
         let chats = await chatModel.findOne({
           participants: { $all: [userId, RecieveruserId] },
         });
@@ -25,19 +48,17 @@ const initSocket = (server) => {
         if (!chats) {
           chats = new chatModel({
             participants: [userId, RecieveruserId],
-            messages:[]
+            messages: [],
           });
         }
         chats.messages.push({
-          senderId:userId,
+          senderId: userId,
           text,
-          recieverId:RecieveruserId
-          
-        })
+          recieverId: RecieveruserId,
+        });
 
-          console.log(chats);
-          await chats.save();
-        
+        console.log(chats);
+        await chats.save();
       } catch (error) {
         console.log(error.message);
       }
