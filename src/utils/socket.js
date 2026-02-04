@@ -1,6 +1,7 @@
 const socket = require("socket.io");
 const chatModel = require("../models/chat");
 const ConnectionsRequests = require("../models/connectionRequests");
+const jwt = require("jsonwebtoken");
 
 const initSocket = (server) => {
   const io = socket(server, {
@@ -10,6 +11,27 @@ const initSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
+    const onlineUsers = new Map();
+    const {token} = socket.handshake.auth;
+
+    // if (!token) {
+    //   return socket.disconnect(); // Handle missing token
+    // }
+
+    const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = verifyToken.id;
+    console.log(userId);
+
+    onlineUsers.set(userId, socket.id);
+
+    socket.emit("getAllOnlineUsersID", Array.from(onlineUsers.keys()));
+
+    socket.broadcast.emit("user_status_changed", {
+      userId: userId,
+      isOnline: true,
+    });
+
+    console.log(`socket: ${socket.id}`);
     socket.on("joinChat", ({ userId, RecieveruserId }) => {
       const room = [userId, RecieveruserId].sort().join("_");
       socket.join(room);
@@ -65,7 +87,14 @@ const initSocket = (server) => {
       io.to(room).emit("messageReceived", { name, text });
     });
 
-    socket.on("disconnect", () => {});
+    socket.on("disconnect", () => {
+      onlineUsers.delete(userId);
+
+      socket.broadcast.emit("user_status_changed", {
+        userId: userId,
+        isOnline: false,
+      });
+    });
   });
 };
 
