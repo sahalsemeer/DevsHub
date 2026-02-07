@@ -10,17 +10,27 @@ const initSocket = (server) => {
     },
   });
 
+  io.use((socket, next) => {
+    const { token } = socket.handshake.auth;
+    try {
+      if (token) {
+        const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
+        const { id } = verifyToken;
+        socket.userId = id;
+        next();
+      } else {
+        return next(new Error("Authentication Error:Token missing!"));
+      }
+    } catch (error) {
+      next(new Error("Authentication Error:Token Invalid Token!"));
+    }
+  });
+
+  const onlineUsers = new Map();
+  
+
   io.on("connection", (socket) => {
-    const onlineUsers = new Map();
-    const {token} = socket.handshake.auth;
-
-    // if (!token) {
-    //   return socket.disconnect(); // Handle missing token
-    // }
-
-    const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = verifyToken.id;
-    console.log(userId);
+    const { userId } = socket;
 
     onlineUsers.set(userId, socket.id);
 
@@ -36,6 +46,7 @@ const initSocket = (server) => {
       const room = [userId, RecieveruserId].sort().join("_");
       socket.join(room);
     });
+    console.log("Online:", onlineUsers);``
 
     socket.on("sendMessage", async ({ name, userId, RecieveruserId, text }) => {
       const room = [userId, RecieveruserId].sort().join("_");
@@ -55,7 +66,7 @@ const initSocket = (server) => {
           ],
         });
 
-        console.log(friends);
+        // console.log(friends);
 
         if (!friends) {
           console.log("You cant send req to not in the friend list!");
@@ -65,7 +76,7 @@ const initSocket = (server) => {
         let chats = await chatModel.findOne({
           participants: { $all: [userId, RecieveruserId] },
         });
-        console.log(chats);
+        // console.log(chats);
 
         if (!chats) {
           chats = new chatModel({
@@ -73,13 +84,14 @@ const initSocket = (server) => {
             messages: [],
           });
         }
+
         chats.messages.push({
           senderId: userId,
           text,
           recieverId: RecieveruserId,
         });
 
-        console.log(chats);
+        console.log("new chat:", chats);
         await chats.save();
       } catch (error) {
         console.log(error.message);

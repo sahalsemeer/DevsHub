@@ -19,7 +19,7 @@ router.get("/chats/:recieverId", UserAuth, async (req, res) => {
         path: "messages.senderId",
         select: "firstName lastName",
       });
-    console.log(chats);
+    // console.log(chats);
     if (!chats) {
       return res.status(200).json({ message: "No chats found!" });
     }
