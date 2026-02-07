@@ -22,6 +22,8 @@ const Chat = () => {
 
       const fetchMessages = data?.data?.chats?.messages;
 
+      // console.log(fetchMessages);
+
       if (fetchMessages) {
         const formatMessages = fetchMessages.map((message) => {
           console.log(message._id, message.text, message.senderId.firstName);
@@ -31,7 +33,7 @@ const Chat = () => {
             sender: `${message.senderId.firstName} ${message.senderId.lastName}`,
           };
         });
-        console.log(formatMessages);
+        console.log('Format: ',formatMessages);
 
         setMessages(formatMessages);
       }
@@ -49,6 +51,10 @@ const Chat = () => {
     const socket = creatSocketConnection();
 
     socket.emit("joinChat", { userId, RecieveruserId });
+
+    // socket.on('getAllOnlineUsersId',(onlineUsers) => {
+    //   console.log(onlineUsers);
+    // })
 
     socket.on("messageReceived", ({ name, text }) => {
       console.log(`${name}:${text}`);
@@ -77,6 +83,7 @@ const Chat = () => {
     if (inputMessage.trim() === "") return;
     
     const socket = creatSocketConnection();
+    
     socket.emit("sendMessage", {
       name: user.firstName,
       userId,
