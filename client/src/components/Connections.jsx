@@ -76,7 +76,7 @@ const Connections = () => {
                           <a>View Profile</a>
                         </li>
                         <li>
-                          <a onClick={() => nav(`/message/${_id}`)}>Message</a>
+                          <a onClick={() => nav(`/chat/${_id}`)}>Message</a>
                         </li>
                         <li>
                           <a className="text-error">Remove</a>

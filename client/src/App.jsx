@@ -36,11 +36,13 @@ const App = () => {
         element:<Requests />
       },
       {
-        path:'/message/:RecieveruserId',
-        element:<Chat />
-      }
-     
-     
+        path: "/chat",
+        element: <Chat />,
+      },
+      {
+        path: "/chat/:targetUserId",
+        element: <Chat />,
+      }, 
     ]
    }  
   ])

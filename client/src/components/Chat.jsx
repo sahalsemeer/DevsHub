@@ -1,148 +1,149 @@
 import React, { useEffect, useState } from "react";
-import { creatSocketConnection } from "../utils/socket";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { BASE_API } from "../utils/constants";
 import axios from "axios";
+import { BASE_API } from "../utils/constants";
+
+import useSocket from "../hooks/useSocket";
+import useChat from "../hooks/useChat";
+import ChatSidebar from "./ChatSidebar";
+import ChatMessages from "./ChatMessages";
+import ChatInput from "./ChatInput";
 
 const Chat = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const { targetUserId } = useParams();
+  console.log('target:',targetUserId);
+  
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
-  const { RecieveruserId } = useParams();
-  const userId = user?._id;
+  const userID = user?._id;
 
-  console.log(messages);
+  const [connections, setConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(true);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
 
-  const getChats = async () => {
-    try {
-      const data = await axios.get(`${BASE_API}/chats/${RecieveruserId}`, {
-        withCredentials: true,
-      });
+  // Custom Hooks
+  // useSocket now returns { socket, onlineUsers }
+  const { socket, onlineUsers } = useSocket(targetUserId);
 
-      const fetchMessages = data?.data?.chats?.messages;
+  // useChat now accepts (targetUserId, socket)
+  const { messages, loading, hasMore, page, getChats, sendMessage, } = useChat(
+    targetUserId,
+    socket,
+  );
 
-      // console.log(fetchMessages);
-
-      if (fetchMessages) {
-        const formatMessages = fetchMessages.map((message) => {
-          console.log(message._id, message.text, message.senderId.firstName);
-          return {
-            id: message._id,
-            text: message.text,
-            sender: `${message.senderId.firstName} ${message.senderId.lastName}`,
-          };
-        });
-        console.log('Format: ',formatMessages);
-
-        setMessages(formatMessages);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // Window Resize Logic
   useEffect(() => {
-    getChats();
+    const handleResize = () => setIsMobileView(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    // console.log(userId);
-
-    const socket = creatSocketConnection();
-
-    socket.emit("joinChat", { userId, RecieveruserId });
-
-    // socket.on('getAllOnlineUsersId',(onlineUsers) => {
-    //   console.log(onlineUsers);
-    // })
-
-    socket.on("messageReceived", ({ name, text }) => {
-      console.log(`${name}:${text}`);
-
-      const newMessage = {
-        id: Date.now(),
-        text: text,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        sender: name,
-      };
-
-      setMessages((messages) => [...messages, newMessage]);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [userId, RecieveruserId]);
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-
-    if (inputMessage.trim() === "") return;
-    
-    const socket = creatSocketConnection();
-    
-    socket.emit("sendMessage", {
-      name: user.firstName,
-      userId,
-      RecieveruserId,
-      text: inputMessage,
-    });
-
-   
-
-    setInputMessage("");
+  // Fetch Connections (Sidebar)
+  const getConnections = async () => {
+    try {
+      const res = await axios.get(BASE_API + "/user/requests/connections", {
+        withCredentials: true,
+      });
+      setConnections(res?.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching connections:", error);
+    } finally {
+      setConnectionsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    getConnections();
+    
+  }, []);
+
+  // Render Logic
+  const showSidebar = !isMobileView || !targetUserId;
+  const showChat = !isMobileView || targetUserId;
+  const isOnline = targetUserId && onlineUsers.includes(targetUserId);
+
+  const activeUser = connections.find((c) => c._id === targetUserId);
+
   return (
-    <div className="flex flex-col h-150 m-20  max-w-3xl mx-auto border border-none rounded-xl overflow-hidden bg-white shadow-lg">
-      {/* Chat Header */}
-      <div className="bg-gray-800 text-white p-5  shadow-md">
-        <h2 className="text-2xl font-semibold m-0">Chat</h2>
-      </div>
-
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-5 bg-gray-700 flex flex-col gap-3">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-white text-base">
-            <p className="m-0">No messages yet. Start the conversation!</p>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div key={message.id} className="flex justify-end animate-slideIn">
-              <p>{message.sender}</p>
-              <div className="max-w-[70%] px-4 py-3 rounded-2xl bg-gray-800 text-white shadow-md">
-                <p className="m-0 mb-1 wrap-break-word leading-relaxed">
-                  {message.text}
-                </p>
-                <span className="text-xs opacity-80 block text-right"></span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Message Input */}
-      <form
-        className="flex p-4 bg-gray-800 border-none gap-3"
-        onSubmit={handleSendMessage}
-      >
-        <input
-          type="text"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-3 border border-none rounded-full text-white outline-none focus:border-gray-600 transition-colors"
-        />
-        <button
-          type="submit"
-          className="px-6 py-3 bg-green-800 text-white border-none rounded-full text-base font-semibold cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 shadow-md"
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-base-200">
+      {/* Sidebar */}
+      {showSidebar && (
+        <div
+          className={`${
+            isMobileView ? "w-full" : "w-1/3 max-w-sm"
+          } bg-base-100 border-r border-base-300 flex flex-col`}
         >
-          Send
-        </button>
-      </form>
+          <ChatSidebar
+            connections={connections}
+            loading={connectionsLoading}
+            onlineUsers={onlineUsers}
+            targetUserId={targetUserId}
+            onSelectUser={(id) => navigate(`/chat/${id}`)}
+          />
+        </div>
+      )}
+
+      {/* Chat Window */}
+      {showChat && (
+        <div className="flex-1 flex flex-col h-full bg-base-100 relative">
+          {targetUserId ? (
+            <>
+              {/* Header */}
+              <div className="p-4 bg-base-100 border-b border-base-300 shadow-sm flex items-center gap-3 sticky top-0 z-10">
+                {isMobileView && (
+                  <button
+                    onClick={() => navigate("/chat")}
+                    className="p-2 mr-2 rounded-full hover:bg-base-200 font-bold text-base-content"
+                  >
+                    ←
+                  </button>
+                )}
+                <div className="flex items-center gap-3">
+                  {activeUser ? (
+                    <>
+                      <img
+                        src={activeUser.photoURL}
+                        alt="avatar"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <h2 className="font-semibold text-base-content leading-tight">
+                          {activeUser.firstName} {activeUser.lastName}
+                        </h2>
+                        {isOnline && (
+                          <span className="text-xs text-success font-medium">
+                            Online
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <h2 className="font-semibold text-base-content">Chat</h2>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages */}
+              <ChatMessages
+                messages={messages}
+                loading={loading}
+                userID={userID}
+                hasMore={hasMore}
+                page={page}
+                loadMore={() => getChats(page + 1)}
+              />
+
+              {/* Input */}
+              <ChatInput onSendMessage={sendMessage} />
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-base-content/50">
+              <p className="text-lg font-medium">Select a conversation</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
