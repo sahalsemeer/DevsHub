@@ -41,15 +41,22 @@ const initSocket = (server) => {
       isOnline: true,
     });
 
-    console.log(`socket: ${socket.id}`);
-    socket.on("joinChat", ({ userId, RecieveruserId }) => {
-      const room = [userId, RecieveruserId].sort().join("_");
+    // console.log(`socket: ${socket.id}`);
+    socket.on("joinChat", ({ userID, RecieveruserId }) => {
+      const room = [userID, RecieveruserId].sort().join("_");
+      // console.log('room:',room);
+      
       socket.join(room);
-    });
-    console.log("Online:", onlineUsers);``
 
-    socket.on("sendMessage", async ({ name, userId, RecieveruserId, text }) => {
+    });
+    // console.log("Online:", onlineUsers);
+
+    socket.on("sendMessage", async ({ name, userId, RecieveruserId, text,timestamp}) => {
       const room = [userId, RecieveruserId].sort().join("_");
+      console.log('send room:',room);
+      
+      console.log('name:',name);
+      
       try {
         const friends = await ConnectionsRequests.findOne({
           $or: [
@@ -69,7 +76,7 @@ const initSocket = (server) => {
         // console.log(friends);
 
         if (!friends) {
-          console.log("You cant send req to not in the friend list!");
+          console.log("You cant send message to not in the friend list!");
           return;
         }
 
@@ -96,10 +103,11 @@ const initSocket = (server) => {
       } catch (error) {
         console.log(error.message);
       }
-      io.to(room).emit("messageReceived", { name, text });
+      io.to(room).emit("messageReceived", { name, text ,userId});
     });
 
     socket.on("disconnect", () => {
+      console.log(`${userId} disconnected!`);
       onlineUsers.delete(userId);
 
       socket.broadcast.emit("user_status_changed", {

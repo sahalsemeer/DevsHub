@@ -14,9 +14,10 @@ const messageSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         required:true,
         ref:'users'
-    }
+    },
 
-})
+
+},{timestamps:true})
 
 const chatSchema = new mongoose.Schema({
     participants:[{type:mongoose.Schema.Types.ObjectId,ref:'users',required:true}],
