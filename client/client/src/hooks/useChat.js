@@ -59,7 +59,14 @@ const useChat = (targetUserId, socket) => {
   useEffect(() => {
     if (!socket || !userID) return;
 
-    const handleMessageReceived = ({ name, text, userId }) => {
+    const handleMessageReceived = ({ name, text, senderId, receiverId }) => {
+      // Defensively filter messages to ensure they belong to the current active chat
+      const isRelevant =
+        senderId === targetUserId ||
+        (senderId === userID && receiverId === targetUserId);
+
+      if (!isRelevant) return;
+
       const newMessage = {
         id: Date.now(),
         text: text,
@@ -68,7 +75,7 @@ const useChat = (targetUserId, socket) => {
           minute: "2-digit",
         }),
         sender: name,
-        senderId: userId,
+        senderId: senderId,
       };
       setMessages((prev) => [...prev, newMessage]);
     };
@@ -78,7 +85,7 @@ const useChat = (targetUserId, socket) => {
     return () => {
       socket.off("messageReceived", handleMessageReceived);
     };
-  }, [socket, userID]);
+  }, [socket, userID, targetUserId]);
 
   const sendMessage = (text) => {
     if (text.trim() === "" || !targetUserId || !userID) return;

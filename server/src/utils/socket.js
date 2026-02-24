@@ -27,7 +27,7 @@ const initSocket = (server) => {
   });
 
   const onlineUsers = new Map();
-  
+
 
   io.on("connection", (socket) => {
     const { userId } = socket;
@@ -44,19 +44,21 @@ const initSocket = (server) => {
     // console.log(`socket: ${socket.id}`);
     socket.on("joinChat", ({ userID, RecieveruserId }) => {
       const room = [userID, RecieveruserId].sort().join("_");
-      // console.log('room:',room);
-      
       socket.join(room);
+    });
 
+    socket.on("leaveChat", ({ userID, RecieveruserId }) => {
+      const room = [userID, RecieveruserId].sort().join("_");
+      socket.leave(room);
     });
     // console.log("Online:", onlineUsers);
 
-    socket.on("sendMessage", async ({ name, userId, RecieveruserId, text,timestamp}) => {
+    socket.on("sendMessage", async ({ name, userId, RecieveruserId, text, timestamp }) => {
       const room = [userId, RecieveruserId].sort().join("_");
-      console.log('send room:',room);
-      
-      console.log('name:',name);
-      
+      console.log('send room:', room);
+
+      console.log('name:', name);
+
       try {
         const friends = await ConnectionsRequests.findOne({
           $or: [
@@ -103,7 +105,7 @@ const initSocket = (server) => {
       } catch (error) {
         console.log(error.message);
       }
-      io.to(room).emit("messageReceived", { name, text ,userId});
+      io.to(room).emit("messageReceived", { name, text, senderId: userId, receiverId: RecieveruserId });
     });
 
     socket.on("disconnect", () => {

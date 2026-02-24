@@ -8,9 +8,9 @@ const useSocket = (targetUserId) => {
     const user = useSelector((state) => state.user.user);
     const userID = user?._id;
 
-    
-   
-    
+
+
+
 
     // 1. Initialize Socket
     useEffect(() => {
@@ -69,6 +69,12 @@ const useSocket = (targetUserId) => {
         if (socket && targetUserId && userID) {
             socket.emit("joinChat", { userID, RecieveruserId: targetUserId });
         }
+
+        return () => {
+            if (socket && targetUserId && userID) {
+                socket.emit("leaveChat", { userID, RecieveruserId: targetUserId });
+            }
+        };
     }, [socket, targetUserId, userID]);
 
     return { socket, onlineUsers };
