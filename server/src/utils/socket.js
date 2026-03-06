@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const initSocket = (server) => {
   const io = socket(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: "http://13.203.209.251",
     },
   });
 
