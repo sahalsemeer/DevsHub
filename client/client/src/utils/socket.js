@@ -6,7 +6,7 @@ import Cookies from 'js-cookie'
 export const creatSocketConnection = () => {
     const token = Cookies.get('token')
     console.log('token:',token);
-    return io(BASE_API,
+    return io('/',{path:'/api/socket.io'},
     {auth:{
         token:token
     }})
