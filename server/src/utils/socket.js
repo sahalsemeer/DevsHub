@@ -30,6 +30,8 @@ const initSocket = (server) => {
 
 
   io.on("connection", (socket) => {
+    console.log('Socket connected succesfully!');
+    
     const { userId } = socket;
 
     onlineUsers.set(userId, socket.id);
