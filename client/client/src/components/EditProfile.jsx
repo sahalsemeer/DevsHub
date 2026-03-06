@@ -27,13 +27,13 @@ const EditProfile = ({ user }) => {
       const res = await axios.patch(
         BASE_API + "/profile/edit",
         { firstName, lastName, age, gender, photoURL, about },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       dispatch(login(res?.data?.user));
       setShowToast(true);
       setTimeout(() => {
-        setShowToast(false)
-      },1000)
+        setShowToast(false);
+      }, 1000);
     } catch (error) {
       console.log(error);
       setErrorMessage(error.response.data);

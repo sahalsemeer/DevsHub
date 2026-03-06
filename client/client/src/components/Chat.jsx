@@ -12,8 +12,8 @@ import ChatInput from "./ChatInput";
 
 const Chat = () => {
   const { targetUserId } = useParams();
-  console.log('target:',targetUserId);
-  
+  console.log("target:", targetUserId);
+
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const userID = user?._id;
@@ -27,7 +27,7 @@ const Chat = () => {
   const { socket, onlineUsers } = useSocket(targetUserId);
 
   // useChat now accepts (targetUserId, socket)
-  const { messages, loading, hasMore, page, getChats, sendMessage, } = useChat(
+  const { messages, loading, hasMore, page, getChats, sendMessage } = useChat(
     targetUserId,
     socket,
   );
@@ -55,7 +55,6 @@ const Chat = () => {
 
   useEffect(() => {
     getConnections();
-    
   }, []);
 
   // Render Logic

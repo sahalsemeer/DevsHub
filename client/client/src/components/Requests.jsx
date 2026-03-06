@@ -28,7 +28,7 @@ const Requests = () => {
       const res = await axios.post(
         `${BASE_API}/connection/review/${status}/${connectionId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setStatus(status);
       console.log(res);

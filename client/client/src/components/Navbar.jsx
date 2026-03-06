@@ -33,7 +33,7 @@ const Navbar = () => {
         </a>
       </div>
       <div className="flex gap-4">
-        { user.user ? (
+        {user.user ? (
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
@@ -46,7 +46,6 @@ const Navbar = () => {
                   src={user.user.photoURL}
                 />
               </div>
-              
             </div>
             <ul
               tabIndex="-1"
@@ -72,9 +71,9 @@ const Navbar = () => {
               </li>
             </ul>
           </div>
-        ):
-        (<></>)
-        }
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

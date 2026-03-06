@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const Connections = () => {
   const connection = useSelector((state) => state.connection);
   // console.log(connection?.connections?.length);
-  const nav = useNavigate()
+  const nav = useNavigate();
 
   const dispatch = useDispatch();
   const getConnections = async () => {

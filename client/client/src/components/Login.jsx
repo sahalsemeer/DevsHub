@@ -23,7 +23,7 @@ const Login = () => {
           emailId: email,
           password: password,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       dispatch(login(res.data));
       navigate("/feed");
@@ -43,11 +43,11 @@ const Login = () => {
           emailId: email,
           password: password,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log(res);
-      dispatch(login(res.data))
-      navigate('/profile')
+      dispatch(login(res.data));
+      navigate("/profile");
     } catch (error) {
       console.log(error);
     }
